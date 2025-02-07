@@ -32,8 +32,8 @@ func NewMembershipHandler(membershipservice service.Membershipservice) Membershi
 // @Tags memberships
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.Membership
-// @Success 200 {object} pkg.ErrorResponse "No membership found"
+// @Success 200 {array} models.Membership "List of memberships"
+// @Success 404 {object} pkg.ErrorResponse "No membership found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /memberships [get]
 func (p *membershipHandlerImpl) GetMemberships(ctx *gin.Context) {
@@ -54,10 +54,9 @@ func (p *membershipHandlerImpl) GetMemberships(ctx *gin.Context) {
 // @Tags memberships
 // @Accept json
 // @Produce json
-// @Security Bearer
 // @Param id path int true "Membership ID"
-// @Success 200 {object} models.UpdateMembership "membership"
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Success 200 {object} models.Membership "Membership data"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid membership ID"
 // @Failure 404 {object} pkg.ErrorResponse "Membership not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /memberships/{id} [get]
@@ -88,8 +87,8 @@ func (p *membershipHandlerImpl) GetMembershipByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Membership ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateMembership
+// @Success 200 {object} map[string]any "Success message and deleted membership data"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid membership ID"
 // @Failure 404 {object} pkg.ErrorResponse "Membership not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /memberships/{id} [delete]
@@ -127,9 +126,8 @@ func (p *membershipHandlerImpl) DeleteMembershipByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param membership body models.InputMembership true "Membership data"
-// @Security Bearer
-// @Success	200	{object} models.CreateMembership
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Success 201 {object} models.Membership "Created membership data"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid request body"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /memberships [post]
 func (p *membershipHandlerImpl) CreateMembership(ctx *gin.Context) {
@@ -154,11 +152,10 @@ func (p *membershipHandlerImpl) CreateMembership(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Membership ID"
-// @Param membership body models.InputMembership true "Membership data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateMembership
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
-// @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
+// @Param membership body models.InputMembership true "Updated membership data"
+// @Success 200 {object} models.Membership "Updated membership data"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid membership ID or request body"
+// @Failure 404 {object} pkg.ErrorResponse "Membership not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /memberships/{id} [put]
 func (p *membershipHandlerImpl) EditMembership(ctx *gin.Context) {

@@ -1,0 +1,1478 @@
+basePath: /
+definitions:
+  models.Booking:
+    properties:
+      book_type_id:
+        type: integer
+      booking_type:
+        $ref: '#/definitions/models.BookingType'
+      car:
+        $ref: '#/definitions/models.Car'
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      customer:
+        $ref: '#/definitions/models.Customer'
+      customer_id:
+        type: integer
+      discount:
+        type: integer
+      driver:
+        $ref: '#/definitions/models.Driver'
+      driver_id:
+        type: integer
+      end_rent:
+        type: string
+      finished:
+        type: boolean
+      id:
+        type: integer
+      start_rent:
+        type: string
+      total_cost:
+        type: integer
+      total_driver_cost:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.BookingType:
+    properties:
+      booking_type:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.Car:
+    properties:
+      created_at:
+        type: string
+      daily_rent:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      stock:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.Customer:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      membership:
+        $ref: '#/definitions/models.Membership'
+      membership_id:
+        type: integer
+      name:
+        type: string
+      nik:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Driver:
+    properties:
+      created_at:
+        type: string
+      daily_cost:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      nik:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.DriverIncentive:
+    properties:
+      booking:
+        $ref: '#/definitions/models.Booking'
+      booking_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      incentive:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.InputBooking:
+    properties:
+      book_type_id:
+        type: integer
+      car_id:
+        type: integer
+      customer_id:
+        type: integer
+      driver_id:
+        type: integer
+      end_rent:
+        type: string
+      finished:
+        type: boolean
+      start_rent:
+        type: string
+    required:
+    - car_id
+    - customer_id
+    - end_rent
+    - start_rent
+    type: object
+  models.InputBookingType:
+    properties:
+      booking_type:
+        type: string
+      description:
+        type: string
+    required:
+    - booking_type
+    - description
+    type: object
+  models.InputCar:
+    properties:
+      daily_rent:
+        type: integer
+      name:
+        type: string
+      stock:
+        type: integer
+    required:
+    - daily_rent
+    - name
+    - stock
+    type: object
+  models.InputCustomer:
+    properties:
+      name:
+        type: string
+      nik:
+        type: string
+      phone:
+        type: string
+    required:
+    - name
+    - nik
+    - phone
+    type: object
+  models.InputDriver:
+    properties:
+      daily_cost:
+        type: integer
+      name:
+        type: string
+      nik:
+        type: string
+      phone:
+        type: string
+    required:
+    - daily_cost
+    - name
+    - nik
+    - phone
+    type: object
+  models.InputDriverIncentive:
+    properties:
+      booking_id:
+        type: integer
+      incentive:
+        type: integer
+    required:
+    - booking_id
+    - incentive
+    type: object
+  models.InputMembership:
+    properties:
+      discount:
+        type: integer
+      membership_name:
+        type: string
+    required:
+    - discount
+    - membership_name
+    type: object
+  models.InputMembershipID:
+    properties:
+      membership_id:
+        type: integer
+    required:
+    - membership_id
+    type: object
+  models.Membership:
+    properties:
+      created_at:
+        type: string
+      discount:
+        type: integer
+      id:
+        type: integer
+      membership_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pkg.ErrorResponse:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Technical Test Backend Golang
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: CAR RENTAL
+  version: "2.0"
+paths:
+  /bookings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all bookings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of bookings
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "404":
+          description: No booking found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of bookings
+      tags:
+      - bookings
+    post:
+      consumes:
+      - application/json
+      description: Create a new booking.
+      parameters:
+      - description: Booking data
+        in: body
+        name: booking
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputBooking'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Booking details
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new booking
+      tags:
+      - bookings
+  /bookings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a booking by its ID.
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Booking details
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "404":
+          description: Booking not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete booking by ID
+      tags:
+      - bookings
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a booking by its ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Booking details
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Booking not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve booking by ID
+      tags:
+      - bookings
+    put:
+      consumes:
+      - application/json
+      description: Update information of a booking.
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Booking data
+        in: body
+        name: booking
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputBooking'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Booking details
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update booking information
+      tags:
+      - bookings
+  /bookingtypes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all bookingTypes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of bookingTypes
+          schema:
+            $ref: '#/definitions/models.BookingType'
+        "404":
+          description: No bookingType found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of bookingTypes
+      tags:
+      - bookingTypes
+    post:
+      consumes:
+      - application/json
+      description: Create a new bookingType.
+      parameters:
+      - description: BookingType data
+        in: body
+        name: bookingType
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputBookingType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created bookingType
+          schema:
+            $ref: '#/definitions/models.BookingType'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new bookingType
+      tags:
+      - bookingTypes
+  /bookingtypes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a bookingType by its ID.
+      parameters:
+      - description: BookingType ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BookingType'
+        "404":
+          description: BookingType not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete bookingType by ID
+      tags:
+      - bookingTypes
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a bookingType by its ID
+      parameters:
+      - description: BookingType ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: BookingType data
+          schema:
+            $ref: '#/definitions/models.BookingType'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: BookingType not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve bookingType by ID
+      tags:
+      - bookingTypes
+    put:
+      consumes:
+      - application/json
+      description: Update information of a bookingType.
+      parameters:
+      - description: BookingType ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: BookingType data
+        in: body
+        name: bookingType
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputBookingType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated bookingType
+          schema:
+            $ref: '#/definitions/models.BookingType'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update bookingType information
+      tags:
+      - bookingTypes
+  /cars:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all available cars.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of cars
+          schema:
+            items:
+              $ref: '#/definitions/models.Car'
+            type: array
+        "404":
+          description: No car found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of cars
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: Add a new car to the system.
+      parameters:
+      - description: Car data
+        in: body
+        name: car
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputCar'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created car
+          schema:
+            $ref: '#/definitions/models.Car'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new car
+      tags:
+      - cars
+  /cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a car from the system using its ID.
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Car successfully deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid required param
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Car not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete car by ID
+      tags:
+      - cars
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a car by its unique ID.
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Car details
+          schema:
+            $ref: '#/definitions/models.Car'
+        "400":
+          description: Invalid car ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Car not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve car by ID
+      tags:
+      - cars
+    put:
+      consumes:
+      - application/json
+      description: Modify details of an existing car.
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated car data
+        in: body
+        name: car
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputCar'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated car
+          schema:
+            $ref: '#/definitions/models.Car'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Car not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update car information
+      tags:
+      - cars
+  /customers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all customers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of customers
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "404":
+          description: No customer found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of customers
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer.
+      parameters:
+      - description: Customer data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new customer
+      tags:
+      - customers
+  /customers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a customer by its ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deleted customer
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "404":
+          description: Customer not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete customer by ID
+      tags:
+      - customers
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer by its ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Customer details
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Customer not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve customer by ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Update information of a customer.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Customer data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated customer
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update customer information
+      tags:
+      - customers
+  /customers/{id}/membership:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a membership assigned to a customer by providing the membership
+        ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Customer with removed membership
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Customer not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Remove membership from a customer
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Assign a membership to a customer by providing the membership ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Membership data
+        in: body
+        name: membership
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputMembershipID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Customer with updated membership
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Customer not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Assign membership to a customer
+      tags:
+      - customers
+  /driver-incentives:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all driver incentives.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of driver incentives
+          schema:
+            items:
+              $ref: '#/definitions/models.DriverIncentive'
+            type: array
+        "404":
+          description: No driver incentive found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of driver incentives
+      tags:
+      - driverIncentives
+    post:
+      consumes:
+      - application/json
+      description: Add a new driver incentive record.
+      parameters:
+      - description: Driver Incentive Data
+        in: body
+        name: driverIncentive
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputDriverIncentive'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created driver incentive
+          schema:
+            $ref: '#/definitions/models.DriverIncentive'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new driver incentive
+      tags:
+      - driverIncentives
+  /driver-incentives/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a driver incentive using its ID.
+      parameters:
+      - description: Driver Incentive ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful deletion message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid required param
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver incentive not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete a driver incentive by ID
+      tags:
+      - driverIncentives
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific driver incentive by its ID.
+      parameters:
+      - description: Driver Incentive ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Driver incentive details
+          schema:
+            $ref: '#/definitions/models.DriverIncentive'
+        "400":
+          description: Invalid driver incentive ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver incentive not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve a driver incentive by ID
+      tags:
+      - driverIncentives
+    put:
+      consumes:
+      - application/json
+      description: Modify details of an existing driver incentive.
+      parameters:
+      - description: Driver Incentive ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated driver incentive data
+        in: body
+        name: driverIncentive
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputDriverIncentive'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated driver incentive
+          schema:
+            $ref: '#/definitions/models.DriverIncentive'
+        "400":
+          description: Invalid required param or request body
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver incentive not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update a driver incentive
+      tags:
+      - driverIncentives
+  /driver-incentives/driver/{id}:
+    get:
+      description: Retrieve a list of incentives for a given driver ID
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of Incentives
+          schema:
+            items:
+              $ref: '#/definitions/models.DriverIncentive'
+            type: array
+        "400":
+          description: Invalid Driver ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: No driverIncentive found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Driver not found / Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Get Driver Incentives List
+      tags:
+      - Drivers Incentive
+  /driver-incentives/driver/{id}/total:
+    get:
+      description: Retrieve the total incentive amount for a given driver ID
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Total Incentive for Driver
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Driver ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Driver not found / Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Get Total Driver Incentives
+      tags:
+      - Drivers Incentive
+  /drivers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all drivers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of drivers
+          schema:
+            items:
+              $ref: '#/definitions/models.Driver'
+            type: array
+        "404":
+          description: No driver found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of drivers
+      tags:
+      - drivers
+    post:
+      consumes:
+      - application/json
+      description: Create a new driver.
+      parameters:
+      - description: Driver data
+        in: body
+        name: driver
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputDriver'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Driver created successfully
+          schema:
+            $ref: '#/definitions/models.Driver'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new driver
+      tags:
+      - drivers
+  /drivers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a driver by its ID.
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Driver deleted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid required param
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete driver by ID
+      tags:
+      - drivers
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a driver by its ID
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Driver data
+          schema:
+            $ref: '#/definitions/models.Driver'
+        "400":
+          description: Invalid driver ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve driver by ID
+      tags:
+      - drivers
+    put:
+      consumes:
+      - application/json
+      description: Update information of a driver.
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated driver data
+        in: body
+        name: driver
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputDriver'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Driver updated successfully
+          schema:
+            $ref: '#/definitions/models.Driver'
+        "400":
+          description: Invalid required param
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Driver not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update driver information
+      tags:
+      - drivers
+  /memberships:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all memberships.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of memberships
+          schema:
+            items:
+              $ref: '#/definitions/models.Membership'
+            type: array
+        "404":
+          description: No membership found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve list of memberships
+      tags:
+      - memberships
+    post:
+      consumes:
+      - application/json
+      description: Create a new membership.
+      parameters:
+      - description: Membership data
+        in: body
+        name: membership
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputMembership'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created membership data
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Create a new membership
+      tags:
+      - memberships
+  /memberships/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a membership by its ID.
+      parameters:
+      - description: Membership ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message and deleted membership data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid membership ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Membership not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Delete membership by ID
+      tags:
+      - memberships
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a membership by its ID
+      parameters:
+      - description: Membership ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Membership data
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Invalid membership ID
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Membership not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Retrieve membership by ID
+      tags:
+      - memberships
+    put:
+      consumes:
+      - application/json
+      description: Update information of a membership.
+      parameters:
+      - description: Membership ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated membership data
+        in: body
+        name: membership
+        required: true
+        schema:
+          $ref: '#/definitions/models.InputMembership'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated membership data
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Invalid membership ID or request body
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "404":
+          description: Membership not found
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/pkg.ErrorResponse'
+      summary: Update membership information
+      tags:
+      - memberships
+schemes:
+- http
+swagger: "2.0"

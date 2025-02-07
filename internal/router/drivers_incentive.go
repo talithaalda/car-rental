@@ -20,6 +20,8 @@ func NewDriverIncentiveRouter(v *gin.RouterGroup, handler handler.DriverIncentiv
 }
 
 func (p *driverIncentiveRouterImpl) Mount() {
+	p.v.GET("/driver/:id", p.handler.GetDriverIncentivesByDriverID)
+	p.v.GET("/driver/:id/total", p.handler.GetTotalDriversIncentiveByDriverID)
 	p.v.GET("/:id", p.handler.GetDriverIncentiveByID)
 	p.v.GET("", p.handler.GetDriversincentive)
 	p.v.DELETE("/:id", p.handler.DeleteDriverIncentiveByID)

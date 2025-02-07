@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,8 +35,8 @@ func NewCustomerHandler(customerservice service.CustomerService) CustomerHandler
 // @Tags customers
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.Customer
-// @Success 200 {object} pkg.ErrorResponse "No customer found"
+// @Success	200	{object} models.Customer "List of customers"
+// @Success 404 {object} pkg.ErrorResponse "No customer found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /customers [get]
 func (p *customerHandlerImpl) GetCustomers(ctx *gin.Context) {
@@ -56,9 +57,8 @@ func (p *customerHandlerImpl) GetCustomers(ctx *gin.Context) {
 // @Tags customers
 // @Accept json
 // @Produce json
-// @Security Bearer
 // @Param id path int true "Customer ID"
-// @Success 200 {object} models.UpdateCustomer "customer"
+// @Success 200 {object} models.Customer "Customer details"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 404 {object} pkg.ErrorResponse "Customer not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
@@ -90,8 +90,7 @@ func (p *customerHandlerImpl) GetCustomerByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Customer ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateCustomer
+// @Success	200	{object} models.Customer "Deleted customer"
 // @Failure 404 {object} pkg.ErrorResponse "Customer not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /customers/{id} [delete]
@@ -99,7 +98,7 @@ func (p *customerHandlerImpl) DeleteCustomerByID(ctx *gin.Context) {
 	// Get customer ID from path parameter
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if id == 0 || err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "Invalid required param"})
 		return
 	}
 
@@ -129,8 +128,7 @@ func (p *customerHandlerImpl) DeleteCustomerByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param customer body models.InputCustomer true "Customer data"
-// @Security Bearer
-// @Success	200	{object} models.CreateCustomer
+// @Success	200	{object} models.Customer
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /customers [post]
@@ -157,8 +155,7 @@ func (p *customerHandlerImpl) CreateCustomer(ctx *gin.Context) {
 // @Produce json
 // @Param id path int true "Customer ID"
 // @Param customer body models.InputCustomer true "Customer data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateCustomer
+// @Success	200	{object} models.Customer "Updated customer"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
@@ -201,7 +198,19 @@ func (p *customerHandlerImpl) EditCustomer(ctx *gin.Context) {
     // Return updated customer data
     ctx.JSON(http.StatusOK, updatedCustomer)
 }
-
+// AssignMembership godoc
+// @Summary Assign membership to a customer
+// @Description Assign a membership to a customer by providing the membership ID.
+// @Tags customers
+// @Accept json
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Param membership body models.InputMembershipID true "Membership data"
+// @Success 200 {object} models.Customer "Customer with updated membership"
+// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Failure 404 {object} pkg.ErrorResponse "Customer not found"
+// @Failure 500 {object} pkg.ErrorResponse "Internal server error"
+// @Router /customers/{id}/membership [put]
 func (p *customerHandlerImpl) AssignMembership(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if id == 0 || err != nil {
@@ -229,6 +238,18 @@ func (p *customerHandlerImpl) AssignMembership(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, updatedCustomer)
 }
+// DeleteMembershipByCustomer godoc
+// @Summary Remove membership from a customer
+// @Description Remove a membership assigned to a customer by providing the membership ID.
+// @Tags customers
+// @Accept json
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Success 200 {object} models.Customer "Customer with removed membership"
+// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Failure 404 {object} pkg.ErrorResponse "Customer not found"
+// @Failure 500 {object} pkg.ErrorResponse "Internal server error"
+// @Router /customers/{id}/membership [delete]
 func (p *customerHandlerImpl) DeleteMembershipByCustomer(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if id == 0 || err != nil {
@@ -236,6 +257,7 @@ func (p *customerHandlerImpl) DeleteMembershipByCustomer(ctx *gin.Context) {
 		return
 	}
 	customer, err := p.customerservice.GetCustomersByID(ctx, uint64(id))
+	fmt.Println(customer)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
 		return
@@ -244,15 +266,13 @@ func (p *customerHandlerImpl) DeleteMembershipByCustomer(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, pkg.ErrorResponse{Message: "Customer not found"})
 		return
 	}
-	member := models.InputMembershipID{}
-	if err := ctx.ShouldBindJSON(&member); err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "Invalid request body"})
-		return
-	}
-	updatedCustomer, err := p.customerservice.DeleteMembershipByCustomer(ctx, uint64(id), member)
+	updatedCustomer, err := p.customerservice.DeleteMembershipByCustomer(ctx, uint64(id), customer)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, updatedCustomer)
+	ctx.JSON(http.StatusOK, map[string]any{
+		"customer":    updatedCustomer,
+		"message": "Your membership has been successfully deleted",
+	})
 	}

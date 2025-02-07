@@ -32,8 +32,8 @@ func NewDriverHandler(driverservice service.Driverservice) DriverHandler {
 // @Tags drivers
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.Driver
-// @Success 200 {object} pkg.ErrorResponse "No driver found"
+// @Success 200 {array} models.Driver "List of drivers"
+// @Success 404 {object} pkg.ErrorResponse "No driver found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /drivers [get]
 func (p *driverHandlerImpl) GetDrivers(ctx *gin.Context) {
@@ -54,10 +54,9 @@ func (p *driverHandlerImpl) GetDrivers(ctx *gin.Context) {
 // @Tags drivers
 // @Accept json
 // @Produce json
-// @Security Bearer
 // @Param id path int true "Driver ID"
-// @Success 200 {object} models.UpdateDriver "driver"
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Success 200 {object} models.Driver "Driver data"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid driver ID"
 // @Failure 404 {object} pkg.ErrorResponse "Driver not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /drivers/{id} [get]
@@ -88,8 +87,8 @@ func (p *driverHandlerImpl) GetDriverByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Driver ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateDriver
+// @Success 200 {object} map[string]any "Driver deleted successfully"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid required param"
 // @Failure 404 {object} pkg.ErrorResponse "Driver not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /drivers/{id} [delete]
@@ -125,8 +124,7 @@ func (p *driverHandlerImpl) DeleteDriverByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param driver body models.InputDriver true "Driver data"
-// @Security Bearer
-// @Success	200	{object} models.CreateDriver
+// @Success 201 {object} models.Driver "Driver created successfully"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /drivers [post]
@@ -152,11 +150,10 @@ func (p *driverHandlerImpl) CreateDriver(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Driver ID"
-// @Param driver body models.InputDriver true "Driver data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateDriver
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
-// @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
+// @Param driver body models.InputDriver true "Updated driver data"
+// @Success 200 {object} models.Driver "Driver updated successfully"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid required param"
+// @Failure 404 {object} pkg.ErrorResponse "Driver not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /drivers/{id} [put]
 func (p *driverHandlerImpl) EditDriver(ctx *gin.Context) {

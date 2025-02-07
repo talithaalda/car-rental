@@ -32,10 +32,10 @@ func NewBookingTypeHandler(bookingTypeservice service.BookingTypeservice) Bookin
 // @Tags bookingTypes
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.BookingType
-// @Success 200 {object} pkg.ErrorResponse "No bookingType found"
+// @Success	200	{object} models.BookingType "List of bookingTypes"
+// @Success 404 {object} pkg.ErrorResponse "No bookingType found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
-// @Router /bookingTypes [get]
+// @Router /bookingtypes [get]
 func (p *bookingTypeHandlerImpl) GetBookingTypes(ctx *gin.Context) {
 	bookingTypes, err := p.bookingTypeservice.GetBookingTypes(ctx)
 	if err != nil {
@@ -54,13 +54,12 @@ func (p *bookingTypeHandlerImpl) GetBookingTypes(ctx *gin.Context) {
 // @Tags bookingTypes
 // @Accept json
 // @Produce json
-// @Security Bearer
 // @Param id path int true "BookingType ID"
-// @Success 200 {object} models.UpdateBookingType "bookingType"
+// @Success 200 {object} models.BookingType "BookingType data" 
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 404 {object} pkg.ErrorResponse "BookingType not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
-// @Router /bookingTypes/{id} [get]
+// @Router /bookingtypes/{id} [get]
 func (p *bookingTypeHandlerImpl) GetBookingTypeByID(ctx *gin.Context) {
 	// get bookingType ID from path parameter
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
@@ -88,11 +87,10 @@ func (p *bookingTypeHandlerImpl) GetBookingTypeByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "BookingType ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateBookingType
+// @Success	200	{object} models.BookingType
 // @Failure 404 {object} pkg.ErrorResponse "BookingType not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
-// @Router /bookingTypes/{id} [delete]
+// @Router /bookingtypes/{id} [delete]
 func (p *bookingTypeHandlerImpl) DeleteBookingTypeByID(ctx *gin.Context) {
 	// Get bookingType ID from path parameter
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -128,11 +126,10 @@ func (p *bookingTypeHandlerImpl) DeleteBookingTypeByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param bookingType body models.InputBookingType true "BookingType data"
-// @Security Bearer
-// @Success	200	{object} models.CreateBookingType
+// @Success	200	{object} models.BookingType "Created bookingType"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
-// @Router /bookingTypes [post]
+// @Router /bookingtypes [post]
 func (p *bookingTypeHandlerImpl) CreateBookingType(ctx *gin.Context) {
 	bookingType := models.InputBookingType{}
 	if err := ctx.BindJSON(&bookingType); err != nil {
@@ -156,12 +153,11 @@ func (p *bookingTypeHandlerImpl) CreateBookingType(ctx *gin.Context) {
 // @Produce json
 // @Param id path int true "BookingType ID"
 // @Param bookingType body models.InputBookingType true "BookingType data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateBookingType
+// @Success	200	{object} models.BookingType "Updated bookingType"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
-// @Router /bookingTypes/{id} [put]
+// @Router /bookingtypes/{id} [put]
 func (p *bookingTypeHandlerImpl) EditBookingType(ctx *gin.Context) {
 	
     id, err := strconv.Atoi(ctx.Param("id"))

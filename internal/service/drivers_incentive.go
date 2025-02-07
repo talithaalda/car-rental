@@ -14,6 +14,8 @@ type DriversIncentiveservice interface {
 	CreateDriverIncentive(ctx context.Context, driverIncentive models.InputDriverIncentive) (models.DriverIncentive, error)
 	EditDriverIncentive(ctx context.Context, id uint64, driverIncentive models.InputDriverIncentive) (models.DriverIncentive, error)
 	DeleteDriverIncentive(ctx context.Context, id uint64) (models.DriverIncentive, error)
+	GetDriverIncentivesByDriverID(ctx context.Context, id uint64) ([]models.DriverIncentive, error)
+	GetTotalDriversIncentiveByDriverID(ctx context.Context, id uint64) (float64, error) 
 }
 type driversIncentiveerviceImpl struct {
 	driverIncentiveRepo repository.DriversIncentiveQuery
@@ -33,6 +35,7 @@ func (s *driversIncentiveerviceImpl) GetDriversIncentive(ctx context.Context) ([
 }
 
 func (s *driversIncentiveerviceImpl) GetDriversIncentiveByID(ctx context.Context, id uint64) (models.DriverIncentive, error) {
+
 	driverIncentive, err := s.driverIncentiveRepo.GetDriversIncentiveByID(ctx, id)
 	if err != nil {
 		return models.DriverIncentive{}, err
@@ -84,4 +87,46 @@ func (s *driversIncentiveerviceImpl) DeleteDriverIncentive(ctx context.Context, 
 	}
 
 	return driverIncentive, err
+}
+
+func (s *driversIncentiveerviceImpl) GetTotalDriversIncentiveByDriverID(ctx context.Context, id uint64) (float64, error) {
+	allIncentive, err := s.driverIncentiveRepo.GetDriversIncentive(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	var totalIncentive float64
+
+	for _, incentive := range allIncentive {
+		if incentive.Booking.DriverID != nil && uint64(*incentive.Booking.DriverID) == id {
+			totalIncentive += float64(incentive.Incentive) 
+		}
+	}
+
+	if totalIncentive == 0 {
+		return 0, errors.New("incentive not found for this driver")
+	}
+
+	return totalIncentive, nil
+}
+
+func (s *driversIncentiveerviceImpl) GetDriverIncentivesByDriverID(ctx context.Context, id uint64) ([]models.DriverIncentive, error) {
+	allIncentive, err := s.driverIncentiveRepo.GetDriversIncentive(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var driverIncentives []models.DriverIncentive
+
+	for _, incentive := range allIncentive {
+		if incentive.Booking.DriverID != nil && uint64(*incentive.Booking.DriverID) == id {
+			driverIncentives = append(driverIncentives, incentive)
+		}
+	}
+
+	if len(driverIncentives) == 0 {
+		return nil, errors.New("no incentives found for this driver")
+	}
+
+	return driverIncentives, nil
 }

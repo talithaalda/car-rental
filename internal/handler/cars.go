@@ -28,12 +28,12 @@ func NewCarHandler(carservice service.Carservice) CarHandler {
 }
 // GetCars godoc
 // @Summary Retrieve list of cars
-// @Description Retrieve a list of all cars.
+// @Description Retrieve a list of all available cars.
 // @Tags cars
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.Car
-// @Success 200 {object} pkg.ErrorResponse "No car found"
+// @Success 200 {array} models.Car "List of cars"
+// @Success 404 {object} pkg.ErrorResponse "No car found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /cars [get]
 func (p *carHandlerImpl) GetCars(ctx *gin.Context) {
@@ -50,14 +50,13 @@ func (p *carHandlerImpl) GetCars(ctx *gin.Context) {
 }
 // GetCarByID godoc
 // @Summary Retrieve car by ID
-// @Description Retrieve a car by its ID
+// @Description Retrieve a car by its unique ID.
 // @Tags cars
 // @Accept json
 // @Produce json
-// @Security Bearer
-// @Param id path int true "Car ID"
-// @Success 200 {object} models.UpdateCar "car"
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Param id path int true "Car ID" 
+// @Success 200 {object} models.Car "Car details"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid car ID"
 // @Failure 404 {object} pkg.ErrorResponse "Car not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /cars/{id} [get]
@@ -83,13 +82,13 @@ func (p *carHandlerImpl) GetCarByID(ctx *gin.Context) {
 }
 // DeleteCarByID godoc
 // @Summary Delete car by ID
-// @Description Delete a car by its ID.
+// @Description Remove a car from the system using its ID.
 // @Tags cars
 // @Accept json
 // @Produce json
 // @Param id path int true "Car ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateCar
+// @Success 200 {object} map[string]any "Car successfully deleted"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid required param"
 // @Failure 404 {object} pkg.ErrorResponse "Car not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /cars/{id} [delete]
@@ -123,14 +122,13 @@ func (p *carHandlerImpl) DeleteCarByID(ctx *gin.Context) {
 }
 // CreateCar godoc
 // @Summary Create a new car
-// @Description Create a new car.
+// @Description Add a new car to the system.
 // @Tags cars
 // @Accept json
 // @Produce json
 // @Param car body models.InputCar true "Car data"
-// @Security Bearer
-// @Success	200	{object} models.CreateCar
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
+// @Success 201 {object} models.Car "Created car"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid request body"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /cars [post]
 func (p *carHandlerImpl) CreateCar(ctx *gin.Context) {
@@ -150,16 +148,15 @@ func (p *carHandlerImpl) CreateCar(ctx *gin.Context) {
 }
 // EditCar godoc
 // @Summary Update car information
-// @Description Update information of a car.
+// @Description Modify details of an existing car.
 // @Tags cars
 // @Accept json
 // @Produce json
 // @Param id path int true "Car ID"
-// @Param car body models.InputCar true "Car data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateCar
-// @Failure 400 {object} pkg.ErrorResponse "Bad request"
-// @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
+// @Param car body models.InputCar true "Updated car data"
+// @Success 200 {object} models.Car "Updated car"
+// @Failure 400 {object} pkg.ErrorResponse "Invalid request body"
+// @Failure 404 {object} pkg.ErrorResponse "Car not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /cars/{id} [put]
 func (p *carHandlerImpl) EditCar(ctx *gin.Context) {

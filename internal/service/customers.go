@@ -15,7 +15,7 @@ type CustomerService interface {
 	EditCustomer(ctx context.Context, id uint64, customer models.InputCustomer) (models.Customer, error)
 	DeleteCustomer(ctx context.Context, id uint64) (models.Customer, error)
 	AssignMembership(ctx context.Context, id uint64, customerMember models.InputMembershipID) (models.Customer, error)
-	DeleteMembershipByCustomer(ctx context.Context, id uint64, customer models.InputMembershipID) (models.Customer, error)
+	DeleteMembershipByCustomer(ctx context.Context, id uint64, customer models.Customer) (models.Customer, error)
 }
 type customerServiceImpl struct {
 	customerRepo repository.CustomersQuery
@@ -107,13 +107,13 @@ func (s *customerServiceImpl) AssignMembership(ctx context.Context, id uint64, c
 	return updatedCustomer, nil
 }
 
-func (s *customerServiceImpl) DeleteMembershipByCustomer(ctx context.Context, id uint64, customer models.InputMembershipID) (models.Customer, error) {
-	updatedCustomer := models.Customer{}
-	updatedCustomer.MembershipID = &customer.MembershipID
-	updatedCustomer.UpdatedAt = time.Now()
-	updatedCustomer, err := s.customerRepo.DeleteMembershipByCustomer(ctx, id, updatedCustomer)
+func (s *customerServiceImpl) DeleteMembershipByCustomer(ctx context.Context, id uint64, customer models.Customer) (models.Customer, error) {
+	customer.MembershipID = nil
+	customer.Membership = nil
+	customer.UpdatedAt = time.Now()
+	customer, err := s.customerRepo.DeleteMembershipByCustomer(ctx, id, customer)
 	if err != nil {
 		return models.Customer{}, err
 	}
-	return updatedCustomer, nil
+	return customer, nil
 }

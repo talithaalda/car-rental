@@ -50,8 +50,8 @@ func NewBookingHandler(
 // @Tags bookings
 // @Accept json
 // @Produce json
-// @Success	200	{object} models.Booking
-// @Success 200 {object} pkg.ErrorResponse "No booking found"
+// @Success	200	{object} models.Booking "List of bookings"
+// @Success 404 {object} pkg.ErrorResponse "No booking found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /bookings [get]
 func (p *bookingHandlerImpl) GetBookings(ctx *gin.Context) {
@@ -72,9 +72,8 @@ func (p *bookingHandlerImpl) GetBookings(ctx *gin.Context) {
 // @Tags bookings
 // @Accept json
 // @Produce json
-// @Security Bearer
 // @Param id path int true "Booking ID"
-// @Success 200 {object} models.UpdateBooking "booking"
+// @Success 200 {object} models.Booking "Booking details"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 404 {object} pkg.ErrorResponse "Booking not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
@@ -106,8 +105,7 @@ func (p *bookingHandlerImpl) GetBookingByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Booking ID"
-// @Security Bearer
-// @Success	200	{object} models.UpdateBooking
+// @Success	200	{object} models.Booking "Booking details"
 // @Failure 404 {object} pkg.ErrorResponse "Booking not found"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /bookings/{id} [delete]
@@ -143,8 +141,7 @@ func (p *bookingHandlerImpl) DeleteBookingByID(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param booking body models.InputBooking true "Booking data"
-// @Security Bearer
-// @Success	200	{object} models.CreateBooking
+// @Success	200	{object} models.Booking "Booking details"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
 // @Router /bookings [post]
@@ -225,8 +222,7 @@ func (p *bookingHandlerImpl) CreateBooking(ctx *gin.Context) {
 // @Produce json
 // @Param id path int true "Booking ID"
 // @Param booking body models.InputBooking true "Booking data"
-// @Security Bearer
-// @Success	200	{object} models.UpdateBooking
+// @Success	200	{object} models.Booking "Booking details"
 // @Failure 400 {object} pkg.ErrorResponse "Bad request"
 // @Failure 401 {object} pkg.ErrorResponse "Unauthorized"
 // @Failure 500 {object} pkg.ErrorResponse "Internal server error"
