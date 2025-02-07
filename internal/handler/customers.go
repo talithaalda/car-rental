@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -18,6 +17,8 @@ type CustomerHandler interface {
 	DeleteCustomerByID(ctx *gin.Context)
 	CreateCustomer(ctx *gin.Context)
 	EditCustomer(ctx *gin.Context)
+	AssignMembership(ctx *gin.Context)
+	DeleteMembershipByCustomer(ctx *gin.Context)
 }
 
 type customerHandlerImpl struct {
@@ -104,7 +105,6 @@ func (p *customerHandlerImpl) DeleteCustomerByID(ctx *gin.Context) {
 
 	// Delete customer by ID
 	customer, err := p.customerservice.DeleteCustomer(ctx, uint64(id))
-	fmt.Println(customer)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
 		return
@@ -137,7 +137,6 @@ func (p *customerHandlerImpl) DeleteCustomerByID(ctx *gin.Context) {
 func (p *customerHandlerImpl) CreateCustomer(ctx *gin.Context) {
 	customer := models.InputCustomer{}
 	if err := ctx.BindJSON(&customer); err != nil {
-		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
 		return
 	}
@@ -202,3 +201,58 @@ func (p *customerHandlerImpl) EditCustomer(ctx *gin.Context) {
     // Return updated customer data
     ctx.JSON(http.StatusOK, updatedCustomer)
 }
+
+func (p *customerHandlerImpl) AssignMembership(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if id == 0 || err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+		return
+	}
+	customer, err := p.customerservice.GetCustomersByID(ctx, uint64(id))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		return
+	}
+	if customer.ID == 0 {
+		ctx.JSON(http.StatusNotFound, pkg.ErrorResponse{Message: "Customer not found"})
+		return
+	}
+	member := models.InputMembershipID{}
+	if err := ctx.ShouldBindJSON(&member); err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "Invalid request body"})
+		return
+	}
+	updatedCustomer, err := p.customerservice.AssignMembership(ctx, uint64(id), member)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, updatedCustomer)
+}
+func (p *customerHandlerImpl) DeleteMembershipByCustomer(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if id == 0 || err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+		return
+	}
+	customer, err := p.customerservice.GetCustomersByID(ctx, uint64(id))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		return
+	}
+	if customer.ID == 0 {
+		ctx.JSON(http.StatusNotFound, pkg.ErrorResponse{Message: "Customer not found"})
+		return
+	}
+	member := models.InputMembershipID{}
+	if err := ctx.ShouldBindJSON(&member); err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "Invalid request body"})
+		return
+	}
+	updatedCustomer, err := p.customerservice.DeleteMembershipByCustomer(ctx, uint64(id), member)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, updatedCustomer)
+	}

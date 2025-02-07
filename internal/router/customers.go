@@ -20,10 +20,11 @@ func NewCustomerRouter(v *gin.RouterGroup, handler handler.CustomerHandler) Cust
 }
 
 func (p *CustomerRouterImpl) Mount() {
-	// p.v.GET("", p.handler.GetCustomers)
 	p.v.GET("/:id", p.handler.GetCustomerByID)
 	p.v.GET("", p.handler.GetCustomers)
 	p.v.DELETE("/:id", p.handler.DeleteCustomerByID)
 	p.v.PUT("/:id", p.handler.EditCustomer)
+	p.v.PUT("/:id/membership", p.handler.AssignMembership)
+	p.v.DELETE("/:id/membership", p.handler.DeleteMembershipByCustomer)
 	p.v.POST("", p.handler.CreateCustomer)
 }

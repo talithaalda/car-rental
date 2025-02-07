@@ -20,7 +20,6 @@ func NewCarRouter(v *gin.RouterGroup, handler handler.CarHandler) CarRouter {
 }
 
 func (p *carRouterImpl) Mount() {
-	// p.v.GET("", p.handler.GetCars)
 	p.v.GET("/:id", p.handler.GetCarByID)
 	p.v.GET("", p.handler.GetCars)
 	p.v.DELETE("/:id", p.handler.DeleteCarByID)

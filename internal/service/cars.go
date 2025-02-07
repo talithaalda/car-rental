@@ -50,7 +50,6 @@ func (s *carserviceImpl) CreateCar(ctx context.Context, car models.InputCar) (mo
 	NewCar.DailyRent = car.DailyRent
 	NewCar.CreatedAt = time.Now()
 
-	// Call repoCarsitory to create car
 	createdCar, err := s.carRepo.CreateCars(ctx, NewCar)
 	if err != nil {
 		return models.Car{}, err
@@ -65,7 +64,6 @@ func (s *carserviceImpl) EditCar(ctx context.Context, id uint64, car models.Inpu
 	updatedCar.DailyRent = car.DailyRent
 	updatedCar.UpdatedAt = time.Now()
 
-	// Call repoCarsitory to create car
 	updatedCar, err := s.carRepo.EditCars(ctx, id, updatedCar)
 	if err != nil {
 		return models.Car{}, err
@@ -78,12 +76,10 @@ func (s *carserviceImpl) DeleteCar(ctx context.Context, id uint64) (models.Car, 
 	if err != nil {
 		return models.Car{}, err
 	}
-	// if car doesn't exist, return
 	if car.ID == 0 {
 		return models.Car{}, nil
 	}
 
-	// delete car by id
 	err = s.carRepo.DeleteCarsByID(ctx, id)
 	if err != nil {
 		return models.Car{}, err

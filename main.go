@@ -40,10 +40,6 @@ func main() {
 	server()
 }
 
-// Product:
-// authorization menggunakan jwt
-// authentication bisa dilakukan dengan login
-// ketika user login, akan memunculkan JWT ketika success
 
 func server() {
 	err := godotenv.Load()
@@ -68,12 +64,47 @@ func server() {
 	carRouter := router.NewCarRouter(carsGroup, carHdl)
 	carRouter.Mount()
 
+	driversGroup := g.Group("/drivers")
+	driverRepo := repository.NewDriversQuery(gorm)
+	driversvc := service.NewDriverservice(driverRepo)
+	driverHdl := handler.NewDriverHandler(driversvc)
+	driverRouter := router.NewDriverRouter(driversGroup, driverHdl)
+	driverRouter.Mount()
+
+	bookingTypesGroup := g.Group("/bookingtypes")
+	bookingTypeRepo := repository.NewBookingTypesQuery(gorm)
+	bookingTypesvc := service.NewBookingTypeservice(bookingTypeRepo)
+	bookingTypeHdl := handler.NewBookingTypeHandler(bookingTypesvc)
+	bookingTypeRouter := router.NewBookingTypeRouter(bookingTypesGroup, bookingTypeHdl)
+	bookingTypeRouter.Mount()
+
+	driversIncentiveGroup := g.Group("/drivers-incentive")
+	driverIncentiveRepo := repository.NewDriversIncentiveQuery(gorm)
+
 	bookingsGroup := g.Group("/bookings")
 	bookingRepo := repository.NewBookingsQuery(gorm)
-	bookingsvc := service.NewBookingservice(bookingRepo)
-	bookingHdl := handler.NewBookingHandler(bookingsvc)
+	bookingsvc := service.NewBookingservice(bookingRepo, carRepo, customerRepo, driverRepo, driverIncentiveRepo)
+	bookingHdl := handler.NewBookingHandler(bookingsvc, customersvc, carsvc, driversvc, bookingTypesvc)
 	bookingRouter := router.NewBookingRouter(bookingsGroup, bookingHdl)
 	bookingRouter.Mount()
+
+	
+	driversIncentivevc := service.NewDriversIncentiveervice(driverIncentiveRepo)
+	driverIncentiveHdl := handler.NewDriverIncentiveHandler(driversIncentivevc, bookingsvc)
+	driverIncentiveRouter := router.NewDriverIncentiveRouter(driversIncentiveGroup, driverIncentiveHdl)
+	driverIncentiveRouter.Mount()
+
+	
+
+	membershipsGroup := g.Group("/memberships")
+	membershipRepo := repository.NewMembershipQuery(gorm)
+	membershipsvc := service.NewMembershipservice(membershipRepo)
+	membershipHdl := handler.NewMembershipHandler(membershipsvc)
+	membershipRouter := router.NewMembershipRouter(membershipsGroup, membershipHdl)
+	membershipRouter.Mount()
+
+	
+	
 	// photosGroup := g.Group("/photos")
 	// photoRepo := repository.NewPhotoQuery(gorm) 
 	// photoSvc := service.NewPhotoService(photoRepo, userRepo)   

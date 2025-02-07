@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"car-rental/internal/infrastructure"
 	"car-rental/internal/models"
@@ -35,8 +34,11 @@ func (u *bookingsQueryImpl) GetBookings(ctx context.Context) ([]models.Booking, 
 	bookings := []models.Booking{}
 
 	if err := db.WithContext(ctx).
+		Preload("Customer.Membership").
 		Preload("Customer"). 
-		Preload("Car").      
+		Preload("Car").
+		Preload("Driver").
+		Preload("BookingType").      
 		Find(&bookings).Error; err != nil {
 		return nil, err
 	}
@@ -45,13 +47,17 @@ func (u *bookingsQueryImpl) GetBookings(ctx context.Context) ([]models.Booking, 
 }
 
 
+
 func (u *bookingsQueryImpl) GetBookingsByID(ctx context.Context, id uint64) (models.Booking, error) {
 	db := u.db.GetConnection()
 	bookings := models.Booking{}
 
 	if err := db.WithContext(ctx).
+		Preload("Customer.Membership").
 		Preload("Customer"). 
-		Preload("Car").     
+		Preload("Car").
+		Preload("Driver").
+		Preload("BookingType").     
 		First(&bookings, id).Error; err != nil { 
 		if err == gorm.ErrRecordNotFound {
 			return models.Booking{}, nil
@@ -64,13 +70,15 @@ func (u *bookingsQueryImpl) GetBookingsByID(ctx context.Context, id uint64) (mod
 
 
 func (u *bookingsQueryImpl) DeleteBookingsByID(ctx context.Context, id uint64) error {
-	fmt.Println("repo")
 	db := u.db.GetConnection()
 
 	booking := models.Booking{}
 	if err := db.WithContext(ctx).
+		Preload("Customer.Membership").
 		Preload("Customer").
 		Preload("Car").
+		Preload("Driver").
+		Preload("BookingType").
 		First(&booking, id).Error; err != nil {
 		return err
 	}
@@ -93,8 +101,11 @@ func (u *bookingsQueryImpl) CreateBookings(ctx context.Context, bookings models.
 	}
 
 	if err := db.WithContext(ctx).
+		Preload("Customer.Membership").
 		Preload("Customer").
 		Preload("Car").
+		Preload("Driver").
+		Preload("BookingType").
 		First(&bookings, bookings.ID).Error; err != nil {
 		return models.Booking{}, err
 	}
@@ -113,8 +124,11 @@ func (u *bookingsQueryImpl) EditBookings(ctx context.Context, id uint64, booking
 
 	updatedBooking := models.Booking{}
 	if err := db.WithContext(ctx).
+		Preload("Customer.Membership").
 		Preload("Customer").
 		Preload("Car").
+		Preload("Driver").
+		Preload("BookingType").
 		First(&updatedBooking, id).Error; err != nil {
 		return models.Booking{}, err
 	}

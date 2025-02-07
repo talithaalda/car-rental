@@ -20,7 +20,6 @@ func NewBookingRouter(v *gin.RouterGroup, handler handler.BookingHandler) Bookin
 }
 
 func (p *BookingRouterImpl) Mount() {
-	// p.v.GET("", p.handler.GetBookings)
 	p.v.GET("/:id", p.handler.GetBookingByID)
 	p.v.GET("", p.handler.GetBookings)
 	p.v.DELETE("/:id", p.handler.DeleteBookingByID)

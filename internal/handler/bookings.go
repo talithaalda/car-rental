@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"car-rental/internal/models"
 	"car-rental/internal/service"
@@ -21,11 +22,28 @@ type BookingHandler interface {
 
 type bookingHandlerImpl struct {
 	bookingservice service.Bookingservice
+	customerservice service.CustomerService
+	carservice service.Carservice
+	driverservice service.Driverservice
+	booktypeservice service.BookingTypeservice
 }
 
-func NewBookingHandler(bookingservice service.Bookingservice) BookingHandler {
-	return &bookingHandlerImpl{bookingservice: bookingservice}
+func NewBookingHandler(
+    bookingservice service.Bookingservice, 
+    customerservice service.CustomerService, 
+    carservice service.Carservice,
+	driverservice service.Driverservice,
+	booktypeservice service.BookingTypeservice,
+) BookingHandler {
+    return &bookingHandlerImpl{
+        bookingservice: bookingservice,
+        customerservice: customerservice,
+        carservice: carservice,
+		driverservice: driverservice,
+		booktypeservice: booktypeservice,
+    }
 }
+
 // GetBookings godoc
 // @Summary Retrieve list of bookings
 // @Description Retrieve a list of all bookings.
@@ -132,11 +150,65 @@ func (p *bookingHandlerImpl) DeleteBookingByID(ctx *gin.Context) {
 // @Router /bookings [post]
 func (p *bookingHandlerImpl) CreateBooking(ctx *gin.Context) {
 	booking := models.InputBooking{}
+
 	if err := ctx.BindJSON(&booking); err != nil {
 		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
 		return
 	}
+	_, err := p.customerservice.GetCustomersByID(ctx, uint64(booking.CustomerID))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "customer not found"})
+		return
+	}
+	
+	_, err = p.carservice.GetCarsByID(ctx, uint64(booking.CarID))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "car not found"})
+		return
+	}
+	
+	_, err = time.Parse("02/01/2006", booking.StartRent)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "start date must be in format dd/mm/yyyy"})
+		return
+	}
+	_, err = time.Parse("02/01/2006", booking.EndRent)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "end date must be in format dd/mm/yyyy"})
+		return
+	}
 
+	if booking.StartRent > booking.EndRent {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "start date must be before end date"})
+		return
+	}
+
+	if booking.BookTypeID != nil && *booking.BookTypeID == 2 {
+		if booking.DriverID == nil {
+			ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "driver id should be provided for BookTypeID 2"})
+			return
+		} else {
+			_, err := p.driverservice.GetDriversByID(ctx, uint64(*booking.DriverID))
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "driver not found"})
+				return
+			}
+		}
+	}
+	if booking.BookTypeID != nil && *booking.BookTypeID == 1 {
+		if booking.DriverID != nil {
+			ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "driver id should not be provided for BookTypeID 1"})
+			return
+		}
+	}
+
+	if booking.BookTypeID != nil {
+		_, err := p.booktypeservice.GetBookingTypesByID(ctx, uint64(*booking.BookTypeID))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "booking type not found"})
+			return
+		}
+	}
 	createdBooking, err := p.bookingservice.CreateBooking(ctx, booking)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
@@ -176,7 +248,6 @@ func (p *bookingHandlerImpl) EditBooking(ctx *gin.Context) {
         ctx.JSON(http.StatusNotFound, pkg.ErrorResponse{Message: "Booking not found"})
         return
     }
-	
 	startDate := booking.StartRent.Format("02/01/2006")
 	endDate := booking.EndRent.Format("02/01/2006")
 	inputBooking := models.InputBooking{}
@@ -189,6 +260,49 @@ func (p *bookingHandlerImpl) EditBooking(ctx *gin.Context) {
         ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "Invalid request body"})
         return
     }
+	_, err = time.Parse("02/01/2006", inputBooking.StartRent)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "start date must be in format dd/mm/yyyy"})
+		return
+	}
+	_, err = time.Parse("02/01/2006", inputBooking.EndRent)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "end date must be in format dd/mm/yyyy"})
+		return
+	}
+
+	if inputBooking.StartRent > inputBooking.EndRent {
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "start date must be before end date"})
+		return
+	}
+
+	if inputBooking.BookTypeID != nil && *inputBooking.BookTypeID == 2 {
+		if inputBooking.DriverID == nil {
+			ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "driver id should be provided for BookTypeID 2"})
+			return
+		} else {
+			_, err := p.driverservice.GetDriversByID(ctx, uint64(*inputBooking.DriverID))
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "driver not found"})
+				return
+			}
+		}
+	}
+	if inputBooking.BookTypeID != nil && *inputBooking.BookTypeID == 1 {
+		if inputBooking.DriverID != nil {
+			ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "driver id should not be provided for BookTypeID 1"})
+			return
+		}
+	}
+
+	if inputBooking.BookTypeID != nil {
+		_, err := p.booktypeservice.GetBookingTypesByID(ctx, uint64(*booking.BookTypeID))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: "booking type not found"})
+			return
+		}
+	}
 
     updatedBooking, err := p.bookingservice.EditBooking(ctx, uint64(id), inputBooking)
     if err != nil {

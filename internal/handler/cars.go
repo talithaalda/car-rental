@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -104,7 +103,7 @@ func (p *carHandlerImpl) DeleteCarByID(ctx *gin.Context) {
 
 	// Delete car by ID
 	car, err := p.carservice.DeleteCar(ctx, uint64(id))
-	fmt.Println(car)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
 		return
@@ -137,7 +136,6 @@ func (p *carHandlerImpl) DeleteCarByID(ctx *gin.Context) {
 func (p *carHandlerImpl) CreateCar(ctx *gin.Context) {
 	car := models.InputCar{}
 	if err := ctx.BindJSON(&car); err != nil {
-		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
 		return
 	}

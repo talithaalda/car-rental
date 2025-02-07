@@ -5,6 +5,7 @@ import (
 	"car-rental/internal/repository"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -17,10 +18,24 @@ type Bookingservice interface {
 }
 type bookingserviceImpl struct {
 	bookingRepo repository.BookingsQuery
+	carRepo     repository.CarsQuery
+	customerRepo repository.CustomersQuery
+	driverRepo  repository.DriversQuery
+	driverIncentiveRepo repository.DriversIncentiveQuery
+
 }
 
-func NewBookingservice(bookingRepo repository.BookingsQuery) Bookingservice {
-	return &bookingserviceImpl{bookingRepo: bookingRepo}
+func NewBookingservice(bookingRepo repository.BookingsQuery, 
+	carRepo repository.CarsQuery, 
+	customerRepo repository.CustomersQuery,
+	driverRepo repository.DriversQuery,
+	driverIncentiveRepo repository.DriversIncentiveQuery) Bookingservice {
+	return &bookingserviceImpl{bookingRepo: bookingRepo, 
+		carRepo: carRepo, 
+		customerRepo: customerRepo,
+		driverRepo: driverRepo,
+		driverIncentiveRepo: driverIncentiveRepo,
+	}
 }
 
 
@@ -53,16 +68,60 @@ func (s *bookingserviceImpl) CreateBooking(ctx context.Context, booking models.I
 	if err != nil {
 		return models.Booking{}, err
 	}
+	daysOfRent := int(endRent.Sub(startRent).Hours() / 24) + 1
+	if daysOfRent <= 0 {
+		return models.Booking{}, fmt.Errorf("EndRent must be after StartRent")
+	}
+
+	car, err := s.carRepo.GetCarsByID(ctx, uint64(booking.CarID))
+	if err != nil {
+		return models.Booking{}, err
+	}
+	
+	totalCost := daysOfRent * car.DailyRent
+
 	NewBooking.CustomerID = booking.CustomerID
 	NewBooking.CarID = booking.CarID
+	NewBooking.BookTypeID = booking.BookTypeID
+	NewBooking.DriverID = booking.DriverID
 	NewBooking.StartRent = startRent
 	NewBooking.EndRent = endRent
-	NewBooking.TotalCost = booking.TotalCost
+	NewBooking.TotalCost = totalCost
 	NewBooking.Finished = booking.Finished
 	NewBooking.CreatedAt = time.Now()
 
-	// Call repoBookingsitory to create booking
+	customer, err := s.customerRepo.GetCustomersByID(ctx, uint64(booking.CustomerID))
+	if err != nil {
+		return models.Booking{}, err
+	}
+	if customer.MembershipID != nil {
+		membershipDiscount := customer.Membership.Discount
+		discount := totalCost * membershipDiscount/100
+		NewBooking.Discount = discount
+	}
+	if booking.BookTypeID != nil && *booking.BookTypeID == 2 {
+		driver, err := s.driverRepo.GetDriversByID(ctx, uint64(*booking.DriverID))
+		if err != nil {
+			return models.Booking{}, err
+		}
+		driverCost := driver.DailyCost
+		totalDriverCost := daysOfRent * driverCost
+		NewBooking.TotalDriverCost = totalDriverCost
+	}
+
 	createdBooking, err := s.bookingRepo.CreateBookings(ctx, NewBooking)
+	if err == nil {
+		incentiveDriver := (daysOfRent * car.DailyRent)*5/100
+		newIncentive := models.DriverIncentive{}
+		newIncentive.Incentive = incentiveDriver
+		newIncentive.BookingID = &createdBooking.ID
+
+		_, err = s.driverIncentiveRepo.CreateDriversIncentive(ctx, newIncentive)
+		if err != nil {
+			return models.Booking{}, err
+		}
+	}
+
 	if err != nil {
 		return models.Booking{}, err
 	}
@@ -80,14 +139,43 @@ func (s *bookingserviceImpl) EditBooking(ctx context.Context, id uint64, booking
 		return models.Booking{}, err
 	}
 
+	daysOfRent := int(endRent.Sub(startRent).Hours() / 24) + 1
+	if daysOfRent <= 0 {
+		return models.Booking{}, fmt.Errorf("EndRent must be after StartRent")
+	}
+
+	car, err := s.carRepo.GetCarsByID(ctx, uint64(booking.CarID))
+	if err != nil {
+		return models.Booking{}, err
+	}
+	
+	totalCost := daysOfRent * car.DailyRent
+	updatedBooking.TotalCost = totalCost
 	updatedBooking.CarID = booking.CarID
 	updatedBooking.StartRent = startRent
 	updatedBooking.EndRent = endRent
-	updatedBooking.TotalCost = booking.TotalCost
 	updatedBooking.Finished = booking.Finished
 	updatedBooking.UpdatedAt = time.Now()
 
-	// Call repoBookingsitory to create booking
+	customer, err := s.customerRepo.GetCustomersByID(ctx, uint64(booking.CustomerID))
+	if err != nil {
+		return models.Booking{}, err
+	}
+	if customer.MembershipID != nil {
+		membershipDiscount := customer.Membership.Discount
+		discount := totalCost * membershipDiscount/100
+		updatedBooking.Discount = discount
+	}
+	if booking.BookTypeID != nil && *booking.BookTypeID == 2 {
+		driver, err := s.driverRepo.GetDriversByID(ctx, uint64(*booking.DriverID))
+		if err != nil {
+			return models.Booking{}, err
+		}
+		driverCost := driver.DailyCost
+		totalDriverCost := daysOfRent * driverCost
+		updatedBooking.TotalDriverCost = totalDriverCost
+	}
+
 	updatedBooking, err = s.bookingRepo.EditBookings(ctx, id, updatedBooking)
 	if err != nil {
 		return models.Booking{}, err
@@ -100,12 +188,10 @@ func (s *bookingserviceImpl) DeleteBooking(ctx context.Context, id uint64) (mode
 	if err != nil {
 		return models.Booking{}, err
 	}
-	// if booking doesn't exist, return
 	if booking.ID == 0 {
 		return models.Booking{}, nil
 	}
 
-	// delete booking by id
 	err = s.bookingRepo.DeleteBookingsByID(ctx, id)
 	if err != nil {
 		return models.Booking{}, err
